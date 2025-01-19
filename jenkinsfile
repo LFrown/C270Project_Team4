@@ -1,51 +1,72 @@
 pipeline {
     agent any
- 
+
     environment {
-        DOCKER_HUB_USERNAME = 'your-dockerhub-username'
-        DOCKER_HUB_REPO = 'inventory-manager'
+        BASE_URL = 'http://localhost:5000'  // URL of your Flask app
     }
- 
+
     stages {
-        stage('Clone Repository') {
+        stage('Test GET /products') {
             steps {
-                git 'https://github.com/LFrown/C270Project_Team4' // Replace with your repo URL
-            }
-        }
- 
-        stage('Build Docker Image') {
-            steps {
-                sh 'docker build -t $DOCKER_HUB_USERNAME/$DOCKER_HUB_REPO:latest .'
-            }
-        }
- 
-        stage('Push Docker Image to Docker Hub') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials-id', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                    sh 'echo $PASSWORD | docker login -u $USERNAME --password-stdin'
-                    sh 'docker push $DOCKER_HUB_USERNAME/$DOCKER_HUB_REPO:latest'
+                script {
+                    def response = sh(script: """
+                        curl -X GET $BASE_URL/products -H "Content-Type: application/json"
+                    """, returnStdout: true).trim()
+
+                    echo "GET /products response: $response"
                 }
             }
         }
- 
-        stage('Deploy Docker Container') {
+
+        stage('Test POST /products') {
             steps {
-                sh '''
-                docker pull $DOCKER_HUB_USERNAME/$DOCKER_HUB_REPO:latest
-                docker stop inventory-manager || true
-                docker rm inventory-manager || true
-                docker run -d --name inventory-manager -p 5000:5000 $DOCKER_HUB_USERNAME/$DOCKER_HUB_REPO:latest
-                '''
+                script {
+                    def newProduct = '{"name": "Phone", "price": 800, "quantity": 50, "category": "Electronics"}'
+                    def response = sh(script: """
+                        curl -X POST $BASE_URL/products \
+                        -H "Content-Type: application/json" \
+                        -d '$newProduct'
+                    """, returnStdout: true).trim()
+
+                    echo "POST /products response: $response"
+                }
+            }
+        }
+
+        stage('Test PUT /products/<id>') {
+            steps {
+                script {
+                    def updatedProduct = '{"name": "Phone Pro", "price": 950, "quantity": 45, "category": "Electronics"}'
+                    def response = sh(script: """
+                        curl -X PUT $BASE_URL/products/1 \
+                        -H "Content-Type: application/json" \
+                        -d '$updatedProduct'
+                    """, returnStdout: true).trim()
+
+                    echo "PUT /products/1 response: $response"
+                }
+            }
+        }
+
+        stage('Test DELETE /products/<id>') {
+            steps {
+                script {
+                    def response = sh(script: """
+                        curl -X DELETE $BASE_URL/products/1 -H "Content-Type: application/json"
+                    """, returnStdout: true).trim()
+
+                    echo "DELETE /products/1 response: $response"
+                }
             }
         }
     }
- 
+
     post {
         success {
-            echo 'Deployment successful!'
+            echo 'API testing completed successfully!'
         }
         failure {
-            echo 'Deployment failed. Check the logs.'
+            echo 'API testing failed. Check the logs for errors.'
         }
     }
 }
