@@ -1,59 +1,26 @@
 pipeline {
     agent any
-
-    environment {
-        DOCKER_IMAGE = 'inventory-manager'
-        DOCKER_HUB_USERNAME = 'your-docker-username'
-    }
-
     stages {
-        stage('Checkout') {
+        stage('Clone Repository') {
             steps {
-                // Pull the latest changes from GitHub
+                // Pull the latest code from GitHub
                 git 'https://github.com/LFrown/C270Project_Team4.git'
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Run Sample Script') {
             steps {
-                // Build the Docker image for your Flask app
-                sh 'docker build -t $DOCKER_HUB_USERNAME/$DOCKER_IMAGE .'
-            }
-        }
-
-        stage('Run Flask App and Test API') {
-            steps {
-                script {
-                    // Start the Flask app in the background
-                    sh 'docker run -d --name flask-app -p 5000:5000 $DOCKER_HUB_USERNAME/$DOCKER_IMAGE'
-
-                    // Wait for the Flask app to start (adjust if needed)
-                    sleep 10
-
-                    // Run the API tests (GET, POST, PUT, DELETE) using cURL
-                    sh 'curl -X GET http://localhost:5000/products'
-                    sh 'curl -X POST http://localhost:5000/products -H "Content-Type: application/json" -d \'{"name": "New Product", "price": 100, "quantity": 5, "category": "Test"}\''
-                    sh 'curl -X PUT http://localhost:5000/products/1 -H "Content-Type: application/json" -d \'{"name": "Updated Product", "price": 150, "quantity": 10, "category": "Test Updated"}\''
-                    sh 'curl -X DELETE http://localhost:5000/products/1'
-                }
-            }
-        }
-
-        stage('Clean up') {
-            steps {
-                // Stop and remove the Docker container
-                sh 'docker stop flask-app || true'
-                sh 'docker rm flask-app || true'
+                // Run the shell script to build, test, and run the application
+                sh './sample-app.sh'
             }
         }
     }
-
     post {
         success {
-            echo 'API testing passed successfully!'
+            echo 'Pipeline executed successfully!'
         }
         failure {
-            echo 'API testing failed. Check the logs for errors.'
+            echo 'Pipeline failed. Check logs for errors.'
         }
     }
 }
