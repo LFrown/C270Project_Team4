@@ -14,6 +14,13 @@ pipeline {
                 sh './sample-app.sh'
             }
         }
+
+        stage('Check Application Status') {
+            steps {
+                // Check if the application is running on localhost:5000
+                sh 'curl --fail --show-error http://localhost:5000 || echo "Application not running!"'
+            }
+        }
     }
     post {
         success {
@@ -24,3 +31,4 @@ pipeline {
         }
     }
 }
+
