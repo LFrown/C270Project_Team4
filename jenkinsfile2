@@ -3,8 +3,8 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                // Pull the latest code from the specified branch (branch2) on GitHub
-                git branch: 'branch2', url: 'https://github.com/LFrown/C270Project_Team4.git'
+                // Pull the latest code from GitHub
+                git 'https://github.com/LFrown/C270Project_Team4.git'
             }
         }
 
@@ -24,3 +24,4 @@ pipeline {
         }
     }
 }
+
