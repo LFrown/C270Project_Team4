@@ -8,6 +8,22 @@ pipeline {
             }
         }
 
+        stage('Stop and Remove Existing Container') {
+            steps {
+                // Stop and remove the existing Docker container named inventory-manager-app if it is running
+                sh '''
+                if [ $(docker ps -q -f name=inventory-manager-app) ]; then
+                    echo "Stopping existing container..."
+                    docker stop inventory-manager-app
+                fi
+                if [ $(docker ps -aq -f name=inventory-manager-app) ]; then
+                    echo "Removing existing container..."
+                    docker rm inventory-manager-app
+                fi
+                '''
+            }
+        }
+
         stage('Run Sample Script') {
             steps {
                 // Run the shell script to build, test, and run the application
@@ -18,7 +34,7 @@ pipeline {
         stage('Check Application Status') {
             steps {
                 // Check if the application is running on localhost:5000
-                sh 'curl --fail --show-error http://localhost:5000 || echo "Application not running!"'
+                sh 'curl --fail --show-error http://localhost:5000'
             }
         }
     }
@@ -28,6 +44,9 @@ pipeline {
         }
         failure {
             echo 'Pipeline failed. Check logs for errors.'
+        }
+    }
+}
         }
     }
 }
