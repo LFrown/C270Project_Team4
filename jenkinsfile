@@ -1,34 +1,14 @@
-pipeline {
-    agent any
-    stages {
-        stage('Clone Repository') {
-            steps {
-                // Pull the latest code from the specified branch (branch2) on GitHub
-                git branch: 'branch2', url: 'https://github.com/LFrown/C270Project_Team4.git'
-            }
-        }
-
-        stage('Run Sample Script') {
-            steps {
-                // Run the shell script to build, test, and run the application
-                sh './sample-app.sh'
-            }
-        }
-
-        stage('Check Application Status') {
-            steps {
-                // Check if the application is running on localhost:5000
-                sh 'curl --fail --show-error http://localhost:5000 || echo "Application not running!"'
-            }
-        }
-    }
-    post {
-        success {
-            echo 'Pipeline executed successfully!'
-        }
-        failure {
-            echo 'Pipeline failed. Check logs for errors.'
-        }
-    }
+node {
+   stage('Preparation') {
+       catchError(buildResult: 'SUCCESS') {
+           sh 'docker stop inventory-manager-app'
+           sh 'docker rm inventory-manager-app'
+       }
+   }
+   stage('Build') {
+       build 'Buildinventoryapp'
+   }
+   stage('Test') {
+       build 'InventoryTest'
+   }
 }
-
