@@ -3,7 +3,7 @@ name: pyATS API Test Automation
 on:
   push:
     branches:
-      - feature/branch4  # Runs on commits to main branch
+      - feature/branch4  # Runs on commits to branch
   pull_request:
     branches:
       - feature/branch4  # Runs on pull requests
