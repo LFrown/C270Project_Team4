@@ -25,7 +25,7 @@
 
     - name: Copy Flask app to localhost
       copy:
-        src: inventory_manager.py
+        src: ../inventory_manager.py
         dest: /opt/flask_app/inventory_manager.py
         mode: '0755'
 
@@ -33,4 +33,4 @@
       shell: nohup python3 /opt/flask_app/inventory_manager.py &  
 
 # use the following command to run the playbook
-# ansible-playbook -i "localhost," -c local deploy.yml
+# ansible-playbook -i "localhost," -c local ansible/deploy.yml
