@@ -20,3 +20,4 @@
 
 # use the following command to run the playbook
 # ansible-playbook -i "localhost," -c local ansible/deploy.yml
+# to end: sudo pkill -f inventory_manager.py
