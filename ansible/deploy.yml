@@ -31,3 +31,6 @@
 
     - name: Start Flask app in the background
       shell: nohup python3 /opt/flask_app/inventory_manager.py &  
+
+# use the following command to run the playbook
+# ansible-playbook -i "localhost," -c local deploy.yml
