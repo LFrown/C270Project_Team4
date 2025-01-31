@@ -75,3 +75,5 @@ class CommonCleanup(aetest.CommonCleanup):
 
 if __name__ == '__main__':
     aetest.main()
+
+# show on github actions the workflow
