@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: mywebapp-service
+  name: inventory-manager-service
 spec:
   selector:
-    app: mywebapp
+    app: inventory-manager
   ports:
     - protocol: TCP
       port: 80
