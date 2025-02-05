@@ -17,4 +17,4 @@ RUN pip install pytest
 EXPOSE 5000
 
 # Command
-# CMD python3 inventory_manager.py
+CMD python3 inventory_manager.py
