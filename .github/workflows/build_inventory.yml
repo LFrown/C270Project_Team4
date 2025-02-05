@@ -34,15 +34,21 @@ jobs:
       - name: Run Tests - Inventory Manager Test
         run: docker run --rm inventory-manager python3 -m pytest tests/test_inventory_manager.py
 
-      # 6. Create a custom Docker network
-      - name: Create Docker Network
-        run: docker network create my_network
+      # 6. Login to Docker Hub
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      # 7. Run the application inside the custom Docker network
+      # 7. Tag and Push Image to Docker Hub
+      - name: Push Docker Image to Docker Hub
+        run: |
+          docker tag inventory-manager YOUR_DOCKER_USERNAME/inventory-manager:latest
+          docker push YOUR_DOCKER_USERNAME/inventory-manager:latest
+
+      # 8. Run the application inside the custom Docker network
       - name: Run Application in Background
         run: docker run -d --name inventory-manager-app -p 5000:5000 inventory-manager
         
-      # 8. Wait for the application to start (allow enough time for Flask to bind to port 5000)
+      # 9. Wait for the application to start (allow enough time for Flask to bind to port 5000)
       - name: Wait for Application to Start
         run: |
           echo "Waiting for Flask to start..."
@@ -58,7 +64,7 @@ jobs:
           fi
           echo "Flask app is up!"
 
-      # 9. Test if the website is up and running (status code 200)
+      # 10. Test if the website is up and running (status code 200)
       - name: Test Website Availability
         run: |
           if curl -s -o /dev/null -w "%{http_code}" http://localhost:5000 | grep -q "200"; then
