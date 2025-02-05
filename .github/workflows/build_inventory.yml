@@ -38,6 +38,28 @@ jobs:
       - name: Run Application in Background
         run: docker run -d --name inventory-manager-app -p 5000:5000 inventory-manager
 
+      - name: Wait for Application to start
+        run: |
+          # Wait for Flask application to be fully up
+          timeout=0
+          until curl -s http://localhost:5000 > /dev/null || [$timeout -eq 30 ]; do
+            echo "Waiting for Flask to start..."
+            sleep 1
+            timeout=$((timeout + 1))
+          done
+          if [ $timeout -eq 30 ]; then
+            echo "Flask app failed to start after 30 seconds"
+            exit 1
+          fi
+      - name: Test Website Availability
+        run: |
+          if curl -s -o /dev/nul -w "%{http_code}" http://localhost:5000 | grep -q "200"; then
+            echo "The website is running"
+          else
+            echo "The website is not running"
+            exit 1
+          fi
+      
       # 7. Wait for the application to start
       - name: Wait for Application to Start
         run: sleep 5
