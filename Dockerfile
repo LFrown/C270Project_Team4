@@ -1,5 +1,5 @@
 # Use a Python base image
-FROM python
+FROM python:3.13
 
 # Set the working directory
 WORKDIR /app
@@ -10,12 +10,11 @@ COPY tests/ /app/tests/
 COPY templates/ /app/templates/
 
 # Install dependencies
-RUN pip install flask
-RUN pip install pytest
+RUN pip install --upgrade pip
+RUN pip install pyats pytest flask 
 
 # Expose the app port
 EXPOSE 5000
 
-# Command
+# Command to run tests and then the application
 CMD python3 -m pytest tests/ && python3 inventory_manager.py
-
