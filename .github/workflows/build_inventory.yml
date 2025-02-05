@@ -48,10 +48,6 @@ jobs:
           done
           echo "Flask app is up!"
 
-      # 7. Wait for the application to start
-      - name: Wait for Application to Start
-        run: sleep 5
-
       # 8. Test if the website is up and running (status code 200)
       - name: Test Website Availability
         run: |
