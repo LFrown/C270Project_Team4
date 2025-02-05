@@ -1,0 +1,50 @@
+name: Build and Test Inventory App
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Stop and Remove Existing Container (if running)
+        run: |
+          docker stop inventory-manager-app || true
+          docker rm inventory-manager-app || true
+
+      - name: Build Docker Image
+        run: docker build -t inventory-manager .
+
+      - name: Run Tests
+        run: docker run --rm inventory-manager python3 -m pytest tests/
+
+      - name: Run Application in Background
+        run: docker run -d --name inventory-manager-app -p 5000:5000 inventory-manager
+
+      - name: Wait for Application to Start
+        run: sleep 5
+
+      - name: Test Website Availability
+        run: |
+          if curl -s -o /dev/null -w "%{http_code}" http://localhost:5000 | grep -q "200"; then
+            echo "The website is running."
+          else
+            echo "The website is not running."
+            exit 1
+          fi
+
+      - name: Show Running Containers
+        run: docker ps
