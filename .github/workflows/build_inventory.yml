@@ -3,10 +3,10 @@ name: Build and Test Inventory App
 on:
   push:
     branches:
-      - main
+      - branch7GitAction
   pull_request:
     branches:
-      - main
+      - branch7GitAction
   workflow_dispatch:
 
 jobs:
