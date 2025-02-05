@@ -37,19 +37,6 @@ jobs:
       # 6. Run the docker and application
       - name: Run Application in Background
         run: docker run -d --name inventory-manager-app -p 5000:5000 inventory-manager
-      
-      - name: Wait for Application to Start
-        run: |
-          # Wait for Flask application to be fully up
-          echo "Waiting for Flask to start..."
-          until curl -s http://localhost:5000 > /dev/null; do
-            echo "Waiting for Flask..."
-            sleep 1
-          done
-          echo "Flask app is up!"
-          
-      - name: View Docker container logs (for debugging)
-        run: docker logs inventory-manager-app
 
       # 8. Test if the website is up and running (status code 200)
       - name: Test Website Availability
