@@ -1,2 +1,19 @@
-test
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: inventory-manager-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: inventory.yourdomain.com  # Replace with your actual domain
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: inventory-manager-service  # Must match your service name
+            port:
+              number: 80  # Must match the service's port
 
