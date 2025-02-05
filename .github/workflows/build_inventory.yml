@@ -47,6 +47,9 @@ jobs:
             sleep 1
           done
           echo "Flask app is up!"
+          
+      - name: View Docker container logs (for debugging)
+        run: docker logs inventory-manager-app
 
       # 8. Test if the website is up and running (status code 200)
       - name: Test Website Availability
