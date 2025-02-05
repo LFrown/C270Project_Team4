@@ -6,7 +6,7 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-  - host: inventoryManagerteam4.com
+  - host: inventorymanagerteam4.com
     http:
       paths:
       - path: /
