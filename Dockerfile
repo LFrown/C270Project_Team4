@@ -11,7 +11,7 @@ COPY templates/ /app/templates/
 
 # Install dependencies
 RUN pip install --upgrade pip
-RUN pip install pyats pytest flask 
+RUN pip install pyats[full] pytest flask
 
 # Expose the app port
 EXPOSE 5000
