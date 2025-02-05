@@ -27,18 +27,22 @@ jobs:
         run: docker build -t inventory-manager .
 
       # 4. Run tests using pytest inside the Docker container
-      - name: Run Tests
-        run: docker run --rm inventory-manager python3 -m pytest tests/
+      - name: Run Tests - Integration Test
+        run: docker run --rm inventory-manager python3 -m pytest tests/test_intergration_inventory_manager_base.py
 
-      # 5. Run the application in the background inside Docker container
+      # 5. Run tests for the main inventory manager code
+      - name: Run Tests - Inventory Manager Test
+        run: docker run --rm inventory-manager python3 -m pytest tests/test_inventory_manager.py
+
+      # 6. Run the application in the background inside Docker container
       - name: Run Application in Background
         run: docker run -d --name inventory-manager-app -p 5000:5000 inventory-manager
 
-      # 6. Wait for the application to start
+      # 7. Wait for the application to start
       - name: Wait for Application to Start
         run: sleep 5
 
-      # 7. Test if the website is up and running (status code 200)
+      # 8. Test if the website is up and running (status code 200)
       - name: Test Website Availability
         run: |
           if curl -s -o /dev/null -w "%{http_code}" http://localhost:5000 | grep -q "200"; then
@@ -48,6 +52,6 @@ jobs:
             exit 1
           fi
 
-      # 8. Show running containers for debugging (optional)
+      # 9. Show running containers for debugging (optional)
       - name: Show Running Containers
         run: docker ps
