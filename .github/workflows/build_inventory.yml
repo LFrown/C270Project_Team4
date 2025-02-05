@@ -14,29 +14,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Check out the code to get the Dockerfile and the app files
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Docker
+      # 2. Set up Docker (for Docker build functionality)
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Stop and Remove Existing Container (if running)
-        run: |
-          docker stop inventory-manager-app || true
-          docker rm inventory-manager-app || true
+      # 3. Log in to Docker Hub (optional: only if you need to push the image later)
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
+      # 4. Build Docker Image using the Dockerfile in the branch
       - name: Build Docker Image
-        run: docker build -t inventory-manager .
+        run: docker build -t lfrown/inventory-manager .
 
+      # 5. Run Tests inside the Docker container using pytest
       - name: Run Tests
-        run: docker run --rm inventory-manager python3 -m pytest tests/
+        run: docker run --rm lfrown/inventory-manager python3 -m pytest tests/
 
+      # 6. Run the Application in the background
       - name: Run Application in Background
-        run: docker run -d --name inventory-manager-app -p 5000:5000 inventory-manager
+        run: docker run -d --name inventory-manager-app -p 5000:5000 lfrown/inventory-manager
 
+      # 7. Wait for the application to start
       - name: Wait for Application to Start
         run: sleep 5
 
+      # 8. Test if the website is up and running (status code 200)
       - name: Test Website Availability
         run: |
           if curl -s -o /dev/null -w "%{http_code}" http://localhost:5000 | grep -q "200"; then
@@ -46,5 +55,11 @@ jobs:
             exit 1
           fi
 
+      # 9. Show Running Containers (optional debugging step)
       - name: Show Running Containers
         run: docker ps
+
+      # Optional: Push the Docker image to Docker Hub (if desired)
+      - name: Push Docker Image to Docker Hub
+        if: success()  # Only push if previous steps succeed
+        run: docker push lfrown/inventory-manager:latest
