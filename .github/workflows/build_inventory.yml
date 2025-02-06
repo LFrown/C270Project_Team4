@@ -3,10 +3,10 @@ name: Build and Test Inventory App
 on:
   push:
     branches:
-      - branch9 # The branch to trigger on
+      - branch10 # The branch to trigger on
   pull_request:
     branches:
-      - branch9  # The branch to trigger on
+      - branch10 # The branch to trigger on
   workflow_dispatch:  # Allow manual trigger if needed
 
 jobs:
