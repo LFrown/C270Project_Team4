@@ -73,3 +73,10 @@ jobs:
             echo "The website is not running."
             exit 1
           fi
+      # 11. Trigger Deployment Workflow if Tests Pass
+      - name: Trigger Deployment Workflow
+        if: success()
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: "deploy.yml"
+          token: ${{ secrets.GITHUB_TOKEN }}
