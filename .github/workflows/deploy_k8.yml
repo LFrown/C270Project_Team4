@@ -14,24 +14,23 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Debug Home Directory
+      - name: Debug SSH Key Storage
         run: |
-          echo "Current User: $(whoami)"
-          echo "Home Directory: $HOME"
-          ls -lah $HOME
-          ls -lah $HOME/.ssh || echo "SSH folder does not exist"
+          echo "Checking stored SSH keys..."
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "Error: SSH_PRIVATE_KEY is empty or not set!"
+            exit 1
+          else
+            echo "SSH key detected, storing securely..."
+          fi
 
       - name: Setup SSH Connection
         run: |
           mkdir -p ~/.ssh
-
+          
           # Store SSH private key securely
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-
-          # Verify stored SSH private key (First 5 lines)
-          echo "Stored SSH Key (First 5 lines):"
-          head -n 5 ~/.ssh/id_rsa || echo "SSH Key not found"
 
           # Add VM to known hosts (Prevent SSH host verification issues)
           ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
@@ -40,7 +39,7 @@ jobs:
       - name: Test SSH Connection to VM
         run: |
           echo "Testing SSH Connection..."
-          ssh -v -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }} "echo 'SSH Connected Successfully!'"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }} "echo 'SSH Connected Successfully!'"
 
       - name: Deploy to Minikube on Remote VM
         run: |
