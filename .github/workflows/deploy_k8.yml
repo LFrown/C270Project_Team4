@@ -1,14 +1,10 @@
 name: Deploy k8
 
 on:
-  push:
-    branches:
-      - branch10  # The branch to trigger on
-  pull_request:
-    branches:
-      - branch10  # The branch to trigger on
-  workflow_dispatch:  # Allow manual trigger if needed
-
+  workflow_run:
+    workflows: ["build_inventory.yml"]  # Name of the triggering workflow
+    types:
+      - completed  # Runs only after the workflow completes
 jobs:
   build-and-test:
     runs-on: self-hosted
