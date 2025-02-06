@@ -1,17 +1,14 @@
 name: Deploy k8
 
 on:
-  push:
-    branches:
-      - branch10 # The branch to trigger on
-  pull_request:
-    branches:
-      - branch10 # The branch to trigger on
-  workflow_dispatch:  # Allow manual trigger if needed
+  workflow_dispatch:  # Allows manual trigger
+  workflow_run:
+    workflows: ['Build and Test Inventory App']  # Must match workflow name exactly
+    types: [completed]
 
 
 jobs:
-  second:
+  k8:
     runs-on: self-hosted
     steps:
       - name: Checkout repository
