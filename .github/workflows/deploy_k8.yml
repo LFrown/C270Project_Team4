@@ -1,10 +1,10 @@
-name: Deploy to Minikube
+name: Deploy to Minikube (Remote VM)
 
 on:
-  workflow_dispatch:  # Triggered manually or from test.yml
+  workflow_dispatch:
   push:
     branches:
-      - master  # Deploy only on master branch updates
+      - master
 
 jobs:
   deploy:
@@ -14,29 +14,30 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Set up Minikube
-        uses: medyagh/setup-minikube@latest
-
-      - name: Start Minikube
+      - name: Setup SSH Connection
         run: |
-          minikube start --driver=docker
-          minikube status
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Set up Docker
+      - name: Deploy to Minikube on Remote VM
         run: |
-          eval $(minikube docker-env)
+          ssh ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }} << 'EOF'
+            # Switch to Minikube Docker
+            eval $(minikube docker-env)
+            
+            # Pull Latest Image
+            docker pull lfrown/inventory-manager:latest
 
-      - name: Pull Latest Image
-        run: |
-          docker pull lfrown/inventory-manager:latest
+            # Apply Kubernetes Config
+            kubectl apply -f /Team4_k8s_App/deployment.yaml
+            kubectl apply -f /Team4_k8s_App/service.yaml
 
-      - name: Update Deployment
-        run: |
-          kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/service.yaml
-          kubectl rollout restart deployment inventory-manager-deployment
+            # Restart Deployment
+            kubectl rollout restart deployment inventory-manager-deployment
+          EOF
 
       - name: Get Service URL
         run: |
-          echo "Access your app at:"
-          minikube service inventory-manager-service --url
+          ssh ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }} minikube service inventory-manager-service --url
