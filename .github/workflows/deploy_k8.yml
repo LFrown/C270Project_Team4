@@ -1,10 +1,10 @@
 name: Deploy to Minikube (Remote VM)
 
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - master
+  workflow_run:
+    workflows: ['Build and Test Inventory App']
+    types: [completed]
+  workflow_dispatch:  # Allows manual trigger if needed
 
 jobs:
   deploy:
