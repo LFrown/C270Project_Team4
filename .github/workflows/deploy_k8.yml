@@ -2,9 +2,10 @@ name: Deploy k8
 
 on:
   workflow_run:
-    workflows: ["build_inventory.yml"]  # Name of the triggering workflow
+    workflows: ["Build Inventory"]  # Match the workflow name from build_inventory.yml
     types:
       - completed  # Runs only after the workflow completes
+
 jobs:
   build-and-test:
     runs-on: self-hosted
@@ -18,6 +19,9 @@ jobs:
           kubectl delete -f Team4_k8s_App/deployment.yaml
           kubectl delete -f Team4_k8s_App/service.yaml
           kubectl delete -f Team4_k8s_App/ingress.yaml
-          
+          kubectl apply -f Team4_k8s_App/deployment.yaml
+          kubectl apply -f Team4_k8s_App/service.yaml
+          kubectl apply -f Team4_k8s_App/ingress.yaml
+
       - name: Verify deployment
         run: kubectl get pods -n default
