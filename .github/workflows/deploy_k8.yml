@@ -14,41 +14,8 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Install Expect (for SSH automation)
+      - name: Run Deployment Script in VM
         run: |
-          sudo apt-get update && sudo apt-get install -y expect
+          echo "🚀 Running deploy.sh in VM..."
+          sshpass -p "${{ secrets.VM_PASSWORD }}" ssh -o StrictHostKeyChecking=no cedrick@192.168.87.132 "bash /home/cedrick/C270ProjectTeam4/k8deployscript.sh"
 
-      - name: Run Deployment Script on Remote VM
-        run: |
-          echo "Starting Deployment..."
-          expect -c "
-            spawn ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }}
-            expect \"password:\"
-            send \"${{ secrets.VM_PASSWORD }}\r\"
-            expect \"$ \"
-
-            send \"echo 'Connected to VM'\r\"
-
-            # Run Deployment Script on VM
-            send \"bash /home/cedrick/C270Project_Team4/k8deployscript.sh\r\"
-
-            send \"exit\r\"
-            interact
-          "
-      - name: Debug SSH Connection
-        run: |
-          echo "🔍 Testing SSH Connection to VM..."
-          expect -c "
-            spawn ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }}
-            expect \"password:\"
-            send \"${{ secrets.VM_PASSWORD }}\r\"
-            expect \"$ \"
-      
-            send \"echo '✅ SSH Connected Successfully!'\r\"
-            send \"hostname\r\"
-            send \"whoami\r\"
-            send \"ls -lah /home/${{ secrets.VM_USERNAME }}/\r\"
-            
-            send \"exit\r\"
-            interact
-          "
