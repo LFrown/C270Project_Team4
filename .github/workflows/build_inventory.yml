@@ -11,7 +11,7 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       # 1. Checkout code from the repository
@@ -73,3 +73,23 @@ jobs:
             echo "The website is not running."
             exit 1
           fi
+     # 6. SSH into VMware VM and Deploy to Kubernetes
+      - name: SSH into VMware VM and Deploy to Kubernetes
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}   # Private IP of the VM
+          username: ${{ secrets.VM_USER }}
+          password: ${{ secrets.VM_PASSWORD }}
+          script: |
+            echo "Connected to VMware VM"
+
+            # Ensure Kubernetes is running
+            kubectl cluster-info || exit 1
+
+            # Update the Kubernetes deployment to use the latest image
+            kubectl set image deployment/inventory-manager inventory-manager=lfrown/inventory-manager:latest --namespace=default
+
+            # Wait for the deployment to roll out
+            kubectl rollout status deployment/inventory-manager --namespace=default
+
+            echo "Kubernetes deployment updated successfully!"
