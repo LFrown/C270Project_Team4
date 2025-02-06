@@ -14,13 +14,13 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Install Expect (for password-based SSH)
+      - name: Install Expect (for SSH automation)
         run: |
           sudo apt-get update && sudo apt-get install -y expect
 
       - name: Deploy to Minikube on Remote VM
         run: |
-          echo "Starting deployment..."
+          echo " Starting Deployment..."
           expect -c "
             spawn ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }}
             expect \"password:\"
@@ -36,33 +36,23 @@ jobs:
             # Ensure Kubernetes is Running
             send \"kubectl cluster-info || minikube start --driver=docker\r\"
 
-            # Switch to Minikube Docker
-            send \"eval \$(minikube docker-env)\r\"
-
-            # Pull latest image from Docker Hub (ensures latest version is used)
-            send \"echo ' Pulling latest Docker image...'\r\"
-            send \"docker pull lfrown/inventory-manager:latest || { echo ' Docker pull failed'; exit 1; }\r\"
-
-            # Delete Old Deployments
+            # Run Kubernetes Deployment Commands INSIDE THE VM
             send \"echo ' Deleting old Kubernetes resources...'\r\"
             send \"kubectl delete -f /Team4_k8s_App/deployment.yaml\r\"
             send \"kubectl delete -f /Team4_k8s_App/ingress.yaml\r\"
             send \"kubectl delete -f /Team4_k8s_App/service.yaml\r\"
 
-            # Apply Updated Deployments
             send \"echo ' Applying new Kubernetes configurations...'\r\"
             send \"kubectl apply -f /Team4_k8s_App/service.yaml\r\"
             send \"kubectl apply -f /Team4_k8s_App/deployment.yaml\r\"
             send \"kubectl apply -f /Team4_k8s_App/ingress.yaml\r\"
 
-            # Force Kubernetes to Use the Latest Image
             send \"echo ' Restarting Pods to Use Latest Image...'\r\"
             send \"kubectl rollout restart deployment inventory-manager-deployment\r\"
 
-            # Restart Minikube Service
             send \"echo ' Restarting Minikube service...'\r\"
-            send \"nohup minikube service inventory-manager-service --url &\r\"
+            send \"minikube service inventory-manager-service --url\r\"
 
-            # Do NOT exit to keep the service running
+            send \"exit\r\"
             interact
           "
