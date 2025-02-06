@@ -14,7 +14,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Install Expect (for SSH automation)
+      - name: Install Expect (for password-based SSH)
         run: |
           sudo apt-get update && sudo apt-get install -y expect
 
@@ -27,42 +27,42 @@ jobs:
             send \"${{ secrets.VM_PASSWORD }}\r\"
             expect \"$ \"
 
-            send \"echo '✅ Connected to VM'\r\"
+            send \"echo ' Connected to VM'\r\"
 
             # Ensure Minikube is Running
-            send \"echo '🔄 Checking Minikube status...'\r\"
+            send \"echo ' Checking Minikube status...'\r\"
             send \"minikube status || minikube start --driver=docker\r\"
 
-            # Run Kubernetes Deployment Commands
-            send \"echo '❌ Deleting old Kubernetes resources...'\r\"
+            # Ensure Kubernetes is Running
+            send \"kubectl cluster-info || minikube start --driver=docker\r\"
+
+            # Switch to Minikube Docker
+            send \"eval \$(minikube docker-env)\r\"
+
+            # Pull latest image from Docker Hub (ensures latest version is used)
+            send \"echo ' Pulling latest Docker image...'\r\"
+            send \"docker pull lfrown/inventory-manager:latest || { echo ' Docker pull failed'; exit 1; }\r\"
+
+            # Delete Old Deployments
+            send \"echo ' Deleting old Kubernetes resources...'\r\"
             send \"kubectl delete -f /Team4_k8s_App/deployment.yaml\r\"
             send \"kubectl delete -f /Team4_k8s_App/ingress.yaml\r\"
             send \"kubectl delete -f /Team4_k8s_App/service.yaml\r\"
 
-            send \"echo '🚀 Applying new Kubernetes configurations...'\r\"
+            # Apply Updated Deployments
+            send \"echo ' Applying new Kubernetes configurations...'\r\"
             send \"kubectl apply -f /Team4_k8s_App/service.yaml\r\"
             send \"kubectl apply -f /Team4_k8s_App/deployment.yaml\r\"
             send \"kubectl apply -f /Team4_k8s_App/ingress.yaml\r\"
 
-            send \"echo '♻️ Restarting Kubernetes service...'\r\"
-            send \"minikube service inventory-manager-service\r\"
+            # Force Kubernetes to Use the Latest Image
+            send \"echo ' Restarting Pods to Use Latest Image...'\r\"
+            send \"kubectl rollout restart deployment inventory-manager-deployment\r\"
 
-            send \"exit\r\"
-            interact
-          "
+            # Restart Minikube Service
+            send \"echo ' Restarting Minikube service...'\r\"
+            send \"nohup minikube service inventory-manager-service --url &\r\"
 
-      - name: Get Minikube Service URL
-        run: |
-          echo "Fetching Minikube service URL..."
-          expect -c "
-            spawn ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }}
-            expect \"password:\"
-            send \"${{ secrets.VM_PASSWORD }}\r\"
-            expect \"$ \"
-
-            send \"minikube service inventory-manager-service --url\r\"
-
-            expect \"$ \"
-            send \"exit\r\"
+            # Do NOT exit to keep the service running
             interact
           "
