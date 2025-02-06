@@ -1,27 +1,42 @@
-name: Deploy k8
+name: Deploy to Minikube
 
 on:
-  workflow_run:
-    workflows: ['Build and Test Inventory App']
-    types: [completed]
-    conclusions: [success]  # ✅ Only trigger if the first workflow succeeds
-
-  workflow_dispatch:  # Allows manual trigger if needed
+  workflow_dispatch:  # Triggered manually or from test.yml
+  push:
+    branches:
+      - master  # Deploy only on master branch updates
 
 jobs:
-  second:
-    runs-on: self-hosted
+  deploy:
+    runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-      - name: Update Kubernetes deployment
+      - name: Set up Minikube
+        uses: medyagh/setup-minikube@latest
+
+      - name: Start Minikube
         run: |
-          kubectl delete -f Team4_k8s_App/deployment.yaml
-          kubectl delete -f Team4_k8s_App/service.yaml
-          kubectl delete -f Team4_k8s_App/ingress.yaml
-          kubectl apply -f Team4_k8s_App/deployment.yaml
-          kubectl apply -f Team4_k8s_App/service.yaml
-          kubectl apply -f Team4_k8s_App/ingress.yaml
+          minikube start --driver=docker
+          minikube status
 
-      - run: echo "K8 action successfully finished!"
+      - name: Set up Docker
+        run: |
+          eval $(minikube docker-env)
+
+      - name: Pull Latest Image
+        run: |
+          docker pull lfrown/inventory-manager:latest
+
+      - name: Update Deployment
+        run: |
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl rollout restart deployment inventory-manager-deployment
+
+      - name: Get Service URL
+        run: |
+          echo "Access your app at:"
+          minikube service inventory-manager-service --url
