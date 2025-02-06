@@ -2,9 +2,9 @@ name: Deploy k8
 
 on:
   workflow_run:
-    workflows: ["Build Inventory"]  # Match the workflow name from build_inventory.yml
+    workflows: ["Build and Test Inventory App"]  # Use exact name from build_inventory.yml
     types:
-      - completed  # Runs only after the workflow completes
+      - completed  # Runs only after "Build and Test Inventory App" successfully completes
 
 jobs:
   build-and-test:
