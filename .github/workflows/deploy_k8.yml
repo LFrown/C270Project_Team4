@@ -19,8 +19,9 @@ jobs:
 
       - name: Update Kubernetes deployment
         run: |
-          kubectl set image deployment/inventory-manager inventory-manager=lfrown/inventory-manager:latest --namespace=default
-          kubectl rollout status deployment/inventory-manager --namespace=default
+          kubectl delete -f deployment.yaml
+          kubectl delete -f service.yaml
+          kubectl delete -f ingress.yaml
           
       - name: Verify deployment
         run: kubectl get pods -n default
