@@ -1,14 +1,15 @@
 name: Deploy k8
 
 on:
-  workflow_dispatch:  # Allows manual trigger
   workflow_run:
-    workflows: ['Build and Test Inventory App']  # Must match workflow name exactly
+    workflows: ['Build and Test Inventory App']
     types: [completed]
+    conclusions: [success]  # ✅ Only trigger if the first workflow succeeds
 
+  workflow_dispatch:  # Allows manual trigger if needed
 
 jobs:
-  k8:
+  second:
     runs-on: self-hosted
     steps:
       - name: Checkout repository
@@ -22,6 +23,5 @@ jobs:
           kubectl apply -f Team4_k8s_App/deployment.yaml
           kubectl apply -f Team4_k8s_App/service.yaml
           kubectl apply -f Team4_k8s_App/ingress.yaml
-          minikube service inventory-manager-service
 
       - run: echo "K8 action successfully finished!"
