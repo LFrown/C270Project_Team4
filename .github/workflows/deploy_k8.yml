@@ -14,41 +14,19 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Debug SSH Key Storage
+      - name: Install sshpass
         run: |
-          echo "Checking stored SSH keys..."
-          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
-            echo "Error: SSH_PRIVATE_KEY is empty or not set!"
-            exit 1
-          else
-            echo "SSH key detected, storing securely..."
-          fi
+          sudo apt-get update && sudo apt-get install -y sshpass
 
-      - name: Setup SSH Connection
-        run: |
-          mkdir -p ~/.ssh
-
-          # Store SSH private key securely with correct formatting
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | awk '{print $0 "\n"}' > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-
-          # Debugging: Verify key content
-          echo "Stored SSH Key (First 5 lines):"
-          head -n 5 ~/.ssh/id_rsa || echo "❌ SSH Key not found!"
-
-          # Add VM to known hosts (Prevent SSH host verification issues)
-          ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
-          chmod 644 ~/.ssh/known_hosts
-
-      - name: Test SSH Connection to VM
+      - name: Test SSH Connection to VM (Using Password)
         run: |
           echo "Testing SSH Connection..."
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }} "echo 'SSH Connected Successfully!'"
+          sshpass -p "${{ secrets.VM_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }} "echo 'SSH Connected Successfully!'"
 
       - name: Deploy to Minikube on Remote VM
         run: |
           echo "Starting deployment..."
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }} << 'EOF'
+          sshpass -p "${{ secrets.VM_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }} << 'EOF'
             set -e  # Exit if any command fails
 
             echo "Switching to Minikube Docker"
@@ -68,4 +46,4 @@ jobs:
       - name: Get Minikube Service URL
         run: |
           echo "Fetching Minikube service URL..."
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }} "minikube service inventory-manager-service --url"
+          sshpass -p "${{ secrets.VM_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }} "minikube service inventory-manager-service --url"
