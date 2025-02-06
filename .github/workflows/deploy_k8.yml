@@ -17,9 +17,14 @@ jobs:
       - name: Setup SSH Connection
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          
+          # Correctly format and write the private key
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
+          
+          # Verify IP/Host before scanning
+          ssh-keyscan -H ${{ secrets.VM_IP }} >> ~/.ssh/known_hosts
+
 
       - name: Deploy to Minikube on Remote VM
         run: |
