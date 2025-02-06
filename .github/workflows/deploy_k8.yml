@@ -35,3 +35,20 @@ jobs:
             send \"exit\r\"
             interact
           "
+      - name: Debug SSH Connection
+        run: |
+          echo "🔍 Testing SSH Connection to VM..."
+          expect -c "
+            spawn ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }}
+            expect \"password:\"
+            send \"${{ secrets.VM_PASSWORD }}\r\"
+            expect \"$ \"
+      
+            send \"echo '✅ SSH Connected Successfully!'\r\"
+            send \"hostname\r\"
+            send \"whoami\r\"
+            send \"ls -lah /home/${{ secrets.VM_USERNAME }}/\r\"
+            
+            send \"exit\r\"
+            interact
+          "
