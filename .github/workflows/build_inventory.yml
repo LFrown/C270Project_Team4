@@ -74,6 +74,23 @@ jobs:
             exit 1
           fi
 
-      # 10. Show running containers for debugging (optional)
-      - name: Show Running Containers
-        run: docker ps
+      # 8. SSH into the VM and Deploy the Application
+      - name: Deploy to Minikube in VM
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_HOST }}  # IP or domain of your VM
+          username: ${{ secrets.VM_USERNAME }}  # SSH username
+          password: ${{ secrets.VM_PASSWORD }}  # Use SSH key instead of password if possible
+          script: |
+            echo "Pulling latest Docker image..."
+            docker pull lfrown/inventory-manager:latest
+
+            echo "Updating Kubernetes deployment..."
+            kubectl apply -f /path/to/your/deployment.yaml
+            kubectl apply -f /path/to/your/service.yaml
+
+            echo "Restarting the deployment to use the latest image..."
+            kubectl rollout restart deployment inventory-manager-deployment
+
+            echo "Verifying deployment..."
+            kubectl get pods -o wide
