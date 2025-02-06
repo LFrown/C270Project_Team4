@@ -1,0 +1,29 @@
+name: Deploy k8
+
+on:
+  push:
+    branches:
+      - branch10  # The branch to trigger on
+  pull_request:
+    branches:
+      - branch10  # The branch to trigger on
+  workflow_dispatch:  # Allow manual trigger if needed
+
+jobs:
+  build-and-test:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Ensure Kubernetes is running
+        run: kubectl cluster-info
+
+      - name: Update Kubernetes deployment
+        run: |
+          kubectl set image deployment/inventory-manager inventory-manager=lfrown/inventory-manager:latest --namespace=default
+          kubectl rollout status deployment/inventory-manager --namespace=default
+          
+      - name: Verify deployment
+        run: kubectl get pods -n default
