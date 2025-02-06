@@ -27,10 +27,14 @@ jobs:
       - name: Setup SSH Connection
         run: |
           mkdir -p ~/.ssh
-          
-          # Store SSH private key securely
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+
+          # Store SSH private key securely with correct formatting
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | awk '{print $0 "\n"}' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+
+          # Debugging: Verify key content
+          echo "Stored SSH Key (First 5 lines):"
+          head -n 5 ~/.ssh/id_rsa || echo "❌ SSH Key not found!"
 
           # Add VM to known hosts (Prevent SSH host verification issues)
           ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
