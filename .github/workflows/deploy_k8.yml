@@ -22,5 +22,6 @@ jobs:
           kubectl apply -f Team4_k8s_App/deployment.yaml
           kubectl apply -f Team4_k8s_App/service.yaml
           kubectl apply -f Team4_k8s_App/ingress.yaml
+          minikube service inventory-manager-service
 
       - run: echo "K8 action successfully finished!"
