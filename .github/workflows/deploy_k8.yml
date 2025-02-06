@@ -14,23 +14,9 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Install Expect (for automated password entry)
+      - name: Install Expect (for SSH automation)
         run: |
           sudo apt-get update && sudo apt-get install -y expect
-
-      - name: Test SSH Connection to VM (Using Password)
-        run: |
-          echo "Testing SSH Connection..."
-          expect -c "
-            spawn ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }}
-            expect \"password:\"
-            send \"${{ secrets.VM_PASSWORD }}\r\"
-            expect \"$ \"
-            send \"echo '✅ SSH Connected Successfully!'\r\"
-            expect \"$ \"
-            send \"exit\r\"
-            interact
-          "
 
       - name: Deploy to Minikube on Remote VM
         run: |
@@ -40,12 +26,27 @@ jobs:
             expect \"password:\"
             send \"${{ secrets.VM_PASSWORD }}\r\"
             expect \"$ \"
-            send \"set -e\r\"
-            send \"eval \$(minikube docker-env)\r\"
-            send \"docker pull lfrown/inventory-manager:latest || { echo 'Docker pull failed'; exit 1; }\r\"
-            send \"kubectl apply -f /Team4_k8s_App/deployment.yaml || { echo 'Failed to apply deployment'; exit 1; }\r\"
-            send \"kubectl apply -f /Team4_k8s_App/service.yaml || { echo 'Failed to apply service'; exit 1; }\r\"
-            send \"kubectl rollout restart deployment inventory-manager-deployment || { echo 'Failed to restart deployment'; exit 1; }\r\"
+
+            send \"echo '✅ Connected to VM'\r\"
+
+            # Ensure Minikube is Running
+            send \"echo '🔄 Checking Minikube status...'\r\"
+            send \"minikube status || minikube start --driver=docker\r\"
+
+            # Run Kubernetes Deployment Commands
+            send \"echo '❌ Deleting old Kubernetes resources...'\r\"
+            send \"kubectl delete -f /Team4_k8s_App/deployment.yaml\r\"
+            send \"kubectl delete -f /Team4_k8s_App/ingress.yaml\r\"
+            send \"kubectl delete -f /Team4_k8s_App/service.yaml\r\"
+
+            send \"echo '🚀 Applying new Kubernetes configurations...'\r\"
+            send \"kubectl apply -f /Team4_k8s_App/service.yaml\r\"
+            send \"kubectl apply -f /Team4_k8s_App/deployment.yaml\r\"
+            send \"kubectl apply -f /Team4_k8s_App/ingress.yaml\r\"
+
+            send \"echo '♻️ Restarting Kubernetes service...'\r\"
+            send \"minikube service inventory-manager-service\r\"
+
             send \"exit\r\"
             interact
           "
@@ -58,5 +59,10 @@ jobs:
             expect \"password:\"
             send \"${{ secrets.VM_PASSWORD }}\r\"
             expect \"$ \"
+
             send \"minikube service inventory-manager-service --url\r\"
-            expect \"$ \
+
+            expect \"$ \"
+            send \"exit\r\"
+            interact
+          "
