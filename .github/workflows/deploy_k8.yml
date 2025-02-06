@@ -19,3 +19,12 @@ jobs:
           echo "🚀 Running deploy.sh in VM..."
           sshpass -p "${{ secrets.VM_PASSWORD }}" ssh -o StrictHostKeyChecking=no cedrick@192.168.87.132 "bash /home/cedrick/C270ProjectTeam4/k8deployscript.sh"
 
+      - name: Debug SSH Connection
+        run: |
+          echo "🔍 Testing SSH Connection..."
+          sshpass -p "${{ secrets.VM_PASSWORD }}" ssh -o StrictHostKeyChecking=no cedrick@192.168.87.132 "
+            echo '✅ SSH Connected Successfully!';
+            hostname;
+            whoami;
+            ls -lah /home/cedrick/C270ProjectTeam4/;
+          "
