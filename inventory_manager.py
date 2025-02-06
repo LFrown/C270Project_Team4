@@ -56,6 +56,13 @@ def add_category_ui():
     }
     categories.append(new_category)
     return redirect(url_for('index'))
-
+# Route to delete a category by ID (UI)
+@app.route('/delete_category/<int:category_id>', methods=['POST'])
+def delete_category_ui(category_id):
+    category = find_category(category_id)
+    if category:
+        categories.remove(category)
+    return redirect(url_for('index'))
+    
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
