@@ -17,32 +17,44 @@ jobs:
       - name: Setup SSH Connection
         run: |
           mkdir -p ~/.ssh
-          
+
           # Store SSH private key securely
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          
-          # Add VM to known hosts
-          ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
 
+          # Add VM to known hosts (Prevent SSH host verification issues)
+          ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Debug SSH Key Storage
+        run: |
+          echo "Checking stored SSH keys..."
+          ls -lah ~/.ssh/
+          head -n 5 ~/.ssh/id_rsa  # Verify key header
+
+      - name: Test SSH Connection to VM
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }} "echo 'SSH Connected Successfully!'"
 
       - name: Deploy to Minikube on Remote VM
         run: |
-          ssh ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }} << 'EOF'
+            set -e  # Exit if any command fails
+            
             # Switch to Minikube Docker
             eval $(minikube docker-env)
-            
+
             # Pull Latest Image
-            docker pull lfrown/inventory-manager:latest
+            docker pull lfrown/inventory-manager:latest || { echo "Docker pull failed"; exit 1; }
 
             # Apply Kubernetes Config
-            kubectl apply -f /Team4_k8s_App/deployment.yaml
-            kubectl apply -f /Team4_k8s_App/service.yaml
+            kubectl apply -f /Team4_k8s_App/deployment.yaml || { echo "Failed to apply deployment"; exit 1; }
+            kubectl apply -f /Team4_k8s_App/service.yaml || { echo "Failed to apply service"; exit 1; }
 
             # Restart Deployment
-            kubectl rollout restart deployment inventory-manager-deployment
+            kubectl rollout restart deployment inventory-manager-deployment || { echo "Failed to restart deployment"; exit 1; }
           EOF
 
-      - name: Get Service URL
+      - name: Get Minikube Service URL
         run: |
-          ssh ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }} minikube service inventory-manager-service --url
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }} "minikube service inventory-manager-service --url"
