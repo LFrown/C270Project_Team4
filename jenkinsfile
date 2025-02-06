@@ -1,0 +1,14 @@
+node {
+   stage('Preparation') {
+       catchError(buildResult: 'SUCCESS') {
+           sh 'docker stop inventory-manager-app'
+           sh 'docker rm inventory-manager-app'
+       }
+   }
+   stage('Build') {
+       build 'Buildinventoryapp'
+   }
+   stage('Test') {
+       build 'InventoryTest'
+   }
+}

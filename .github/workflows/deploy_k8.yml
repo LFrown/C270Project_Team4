@@ -1,0 +1,27 @@
+name: Deploy k8
+
+on:
+  workflow_dispatch:  # Allows manual trigger
+  workflow_run:
+    workflows: ['Build and Test Inventory App']  # Must match workflow name exactly
+    types: [completed]
+
+
+jobs:
+  k8:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update Kubernetes deployment
+        run: |
+          kubectl delete -f Team4_k8s_App/deployment.yaml
+          kubectl delete -f Team4_k8s_App/service.yaml
+          kubectl delete -f Team4_k8s_App/ingress.yaml
+          kubectl apply -f Team4_k8s_App/deployment.yaml
+          kubectl apply -f Team4_k8s_App/service.yaml
+          kubectl apply -f Team4_k8s_App/ingress.yaml
+          minikube service inventory-manager-service
+
+      - run: echo "K8 action successfully finished!"

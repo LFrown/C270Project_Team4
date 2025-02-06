@@ -1,0 +1,6 @@
+          kubectl delete -f Team4_k8s_App/deployment.yaml
+          kubectl delete -f Team4_k8s_App/service.yaml
+          kubectl delete -f Team4_k8s_App/ingress.yaml
+          kubectl apply -f Team4_k8s_App/deployment.yaml
+          kubectl apply -f Team4_k8s_App/service.yaml
+          kubectl apply -f Team4_k8s_App/ingress.yaml

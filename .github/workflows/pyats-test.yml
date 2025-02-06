@@ -1,0 +1,38 @@
+name: pyATS API Test Automation
+
+on:
+  push:
+    branches:
+      - feature/branch4  # Runs on commits to branch
+  pull_request:
+    branches:
+      - feature/branch4  # Runs on pull requests
+
+jobs:
+  test:
+    runs-on: ubuntu-latest  # Use Ubuntu for testing
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install Dependencies
+        run: |
+          pip install pyats genie requests flask
+          pip install -r requirements.txt || true  # Install additional dependencies if needed
+
+      - name: Start Flask API (Background)
+        run: |
+          nohup python inventory_manager.py &  # Start Flask server
+          sleep 5  # Wait for server to start
+
+      - name: Run pyATS Tests
+        run: python3 tests/test_inventory_manager_genie.py  # Run pyATS tests
+
+      - name: Stop Flask Server
+        run: pkill -f inventory_manager.py || true  # Kill server process if running

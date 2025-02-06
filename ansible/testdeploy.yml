@@ -1,0 +1,23 @@
+- name: Simple Flask App Deployment on Localhost
+  hosts: localhost
+  become: yes  # Run as root
+
+  tasks:
+    - name: Install Python & pip
+      apt:
+        name:
+          - python3
+          - python3-pip
+        state: present
+        update_cache: yes
+
+    - name: Install Flask
+      pip:
+        name: flask
+
+    - name: Start Flask app in the background
+      shell: nohup python3 ../inventory_manager.py &  
+
+# use the following command to run the playbook
+# ansible-playbook -i "localhost," -c local ansible/deploy.yml
+# to end: sudo pkill -f inventory_manager.py

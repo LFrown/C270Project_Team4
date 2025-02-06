@@ -9,7 +9,7 @@
 <body>
     <div class="container mt-5">
         <h1 class="text-center mb-4">Inventory Manager</h1>
-        
+
         <!-- Products Table -->
         <h2>Products</h2>
         <table class="table table-bordered">
@@ -32,6 +32,7 @@
                     <td>{{ product.quantity }}</td>
                     <td>{{ product.category }}</td>
                     <td>
+                        <!-- Form to delete a product -->
                         <form action="/delete_product/{{ product.id }}" method="POST" style="display:inline-block;">
                             <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                         </form>
@@ -58,9 +59,49 @@
             </div>
             <div class="mb-3">
                 <label for="category" class="form-label">Category</label>
-                <input type="text" class="form-control" id="category" name="category" required>
+                <select class="form-control" id="category" name="category" required>
+                    {% for category in categories %}
+                    <option value="{{ category.name }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
             </div>
             <button type="submit" class="btn btn-primary">Add Product</button>
+        </form>
+
+        <!-- Categories Table -->
+        <h2 class="mt-5">Categories</h2>
+        <table class="table table-bordered">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for category in categories %}
+                <tr>
+                    <td>{{ category.id }}</td>
+                    <td>{{ category.name }}</td>
+                    <td>
+                        <!-- Form to delete a category -->
+                        <form action="/delete_category/{{ category.id }}" method="POST" style="display:inline-block;">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Add Category Form -->
+        <h2 class="mt-5">Add New Category</h2>
+        <form action="/add_category" method="POST">
+            <div class="mb-3">
+                <label for="name" class="form-label">Category Name</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+            <button type="submit" class="btn btn-secondary">Add Category</button>
         </form>
     </div>
 </body>

@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-manager-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: inventory-manager
+  template:
+    metadata:
+      labels:
+        app: inventory-manager
+    spec:
+      containers:
+        - name: inventory-manager
+          image: lfrown/inventory-manager:latest
+          ports:
+            - containerPort: 5000
