@@ -1,15 +1,18 @@
 name: Deploy k8
 
 on:
-  workflow_dispatch:
-  workflow_run:
-    workflows: ['Build and Test Inventory App']
-    types: [completed]
+  push:
+    branches:
+      - branch10 # The branch to trigger on
+  pull_request:
+    branches:
+      - branch10 # The branch to trigger on
+  workflow_dispatch:  # Allow manual trigger if needed
+
 
 jobs:
   second:
     runs-on: self-hosted
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
