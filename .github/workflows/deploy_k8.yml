@@ -18,11 +18,11 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           
-          # Correctly format and write the private key
+          # Store SSH private key securely
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           
-          # Verify IP/Host before scanning
+          # Add VM to known hosts
           ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
 
 
