@@ -23,7 +23,7 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           
           # Verify IP/Host before scanning
-          ssh-keyscan -H ${{ secrets.VM_IP }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
 
 
       - name: Deploy to Minikube on Remote VM
