@@ -46,6 +46,6 @@ jobs:
       - name: Deploy to Kubernetes via Ansible
         uses: dawidd6/action-ansible-playbook@v2
         with:
-          playbook: deploy_app.yml
+          playbook: deploy.yml
           inventory: inventory.ini
           key: ${{ secrets.SSH_PRIVATE_KEY }}
