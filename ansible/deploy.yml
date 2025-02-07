@@ -1,11 +1,11 @@
 - name: Deploy Inventory Manager to Kubernetes (Remote VM)
   hosts: k8s_master
-  become: yes  
-  
+  become: yes  # Ensure sudo access
+
   tasks:
     - name: Copy Kubernetes Deployment YAMLs to VM
       copy:
-        src: "{{ item }}"
+        src: "../Team4_k8s_App/{{ item }}" 
         dest: "/home/cedrick/C270Project_Team4/Team4_k8s_App/"
       loop:
         - deployment.yaml
@@ -13,9 +13,15 @@
         - ingress.yaml
 
     - name: Apply Kubernetes Manifests
+      become: yes  # Ensures `kubectl` runs with sudo
       become_user: cedrick
-      shell: /usr/bin/kubectl apply -f /home/cedrick/C270Project_Team4/Team4_k8s_App/
+      shell: |
+        export KUBECONFIG=/etc/kubernetes/admin.conf
+        kubectl apply -f /home/cedrick/C270Project_Team4/Team4_k8s_App/
 
     - name: Restart Deployment to Pull Latest Image
+      become: yes
       become_user: cedrick
-      shell: /usr/bin/kubectl rollout restart deployment inventory-manager-deployment
+      shell: |
+        export KUBECONFIG=/etc/kubernetes/admin.conf
+        kubectl rollout restart deployment inventory-manager-deployment
