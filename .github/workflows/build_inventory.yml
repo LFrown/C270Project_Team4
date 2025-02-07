@@ -52,7 +52,7 @@ jobs:
           chmod 700 ~/.ssh
 
           echo "Writing SSH private key..."
-          echo "$SSH_KEY" | base64 --decode > ~/.ssh/id_rsa
+          echo "$SSH_KEY" | tr -d '\r' > ~/.ssh/id_rsa  # Removes Windows-style line endings
           chmod 600 ~/.ssh/id_rsa
 
           echo "Starting SSH Agent..."
@@ -64,17 +64,10 @@ jobs:
         shell: bash
 
       - name: Debug SSH Key Permissions
-        run: |
-          echo "Checking SSH directory..."
-          ls -lah ~/.ssh
-          echo "Checking file permissions..."
-          stat ~/.ssh/id_rsa
-          echo "Displaying first few lines of the SSH private key (masked)..."
-          head -n 5 ~/.ssh/id_rsa | sed 's/./*/g/'
-        shell: bash
+        run: ls -lah ~/.ssh && cat ~/.ssh/id_rsa
 
       - name: Test SSH Connection
-        run: ssh -o StrictHostKeyChecking=no cedrick@192.168.87.132 "echo SSH connection successful"
+        run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no cedrick@192.168.87.132 "echo SSH connection successful"
 
       - name: Debug Ansible Inventory
         run: cat ansible/inventory.ini
