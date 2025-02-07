@@ -43,6 +43,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Ensure SSH is Installed
+        run: |
+          echo "Checking if SSH is installed..."
+          if ! command -v ssh >/dev/null; then
+            echo "SSH is not installed. Installing..."
+            sudo apt update && sudo apt install -y openssh-client
+          else
+            echo "SSH is already installed."
+          fi
+          ssh -V  # Verify SSH version
+
       - name: Setup SSH Key for Ansible
         run: |
           echo "Creating SSH directory..."
@@ -58,13 +69,19 @@ jobs:
 
       - name: Debug SSH Key Permissions
         run: |
-          echo "Checking SSH Key Permissions..."
+          echo "Checking SSH key permissions..."
           ls -lah ~/.ssh
-          cat ~/.ssh/id_rsa || echo "SSH key not found!"
-          chmod 600 ~/.ssh/id_rsa
+          cat ~/.ssh/id_rsa
+
+      - name: Debug Known Hosts
+        run: |
+          echo "Checking known hosts..."
+          cat ~/.ssh/known_hosts
 
       - name: Test SSH Connection
-        run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no cedrick@192.168.87.132 "echo SSH connection successful"
+        run: |
+          echo "Testing SSH connection..."
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no cedrick@192.168.87.132 "echo SSH connection successful"
 
       - name: Debug Ansible Inventory
         run: cat ansible/inventory.ini
@@ -78,4 +95,4 @@ jobs:
           playbook: ansible/deploy.yml
           inventory: ansible/inventory.ini
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          options: "-vvvv"
+          options: "-vvv"
