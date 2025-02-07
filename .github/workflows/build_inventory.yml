@@ -50,14 +50,18 @@ jobs:
           chmod 700 ~/.ssh
 
           echo "Writing SSH private key..."
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
           echo "Adding SSH key to known hosts..."
           ssh-keyscan -H 192.168.87.132 >> ~/.ssh/known_hosts
 
       - name: Debug SSH Key Permissions
-        run: ls -lah ~/.ssh && cat ~/.ssh/id_rsa
+        run: |
+          echo "Checking SSH Key Permissions..."
+          ls -lah ~/.ssh
+          cat ~/.ssh/id_rsa || echo "SSH key not found!"
+          chmod 600 ~/.ssh/id_rsa
 
       - name: Test SSH Connection
         run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no cedrick@192.168.87.132 "echo SSH connection successful"
@@ -74,4 +78,4 @@ jobs:
           playbook: ansible/deploy.yml
           inventory: ansible/inventory.ini
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          options: "-vvv"
+          options: "-vvvv"
