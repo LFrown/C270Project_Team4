@@ -49,8 +49,8 @@ jobs:
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
           
-          echo "Decoding SSH private key..."
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 --decode > ~/.ssh/id_rsa
+          echo "Writing SSH private key..."
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           
           echo "Setting permissions..."
           chmod 600 ~/.ssh/id_rsa
