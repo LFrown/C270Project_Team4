@@ -48,10 +48,10 @@ jobs:
           echo "Creating SSH directory..."
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          
+
           echo "Writing SSH private key..."
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          
+          printf "%s" "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+
           echo "Setting permissions..."
           chmod 600 ~/.ssh/id_rsa
 
@@ -61,10 +61,14 @@ jobs:
 
       - name: Debug SSH Key Permissions
         run: |
-          echo "Checking SSH directory and key permissions:"
+          echo "Listing SSH directory contents:"
           ls -lah ~/.ssh
-          echo "Displaying first few lines of SSH key (masked):"
-          head -n 5 ~/.ssh/id_rsa
+          
+          echo "Checking file permissions:"
+          stat ~/.ssh/id_rsa
+
+          echo "Showing first few lines of SSH private key (masked):"
+          head -n 5 ~/.ssh/id_rsa | sed 's/./*/g/'
         shell: bash
 
       - name: Test SSH Connection
