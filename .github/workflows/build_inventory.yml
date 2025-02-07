@@ -3,10 +3,10 @@ name: Build, Test, and Deploy Inventory App
 on:
   push:
     branches:
-      - master
+      - branch11
   pull_request:
     branches:
-      - master
+      - branch11
   workflow_dispatch:
 
 jobs:
