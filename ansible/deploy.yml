@@ -1,18 +1,19 @@
 - name: Deploy Inventory Manager to Kubernetes (Remote VM)
   hosts: k8s_master
   become: yes
+
   tasks:
     - name: Copy Kubernetes Deployment YAMLs to VM
       copy:
         src: "{{ item }}"
-        dest: "/home/{{ ansible_user }}/k8s/"
+        dest: "/home/Cedrick/C270Project_Team4/Team4_k8s_App/"
       loop:
         - deployment.yaml
         - service.yaml
         - ingress.yaml
 
     - name: Apply Kubernetes Manifests
-      shell: kubectl apply -f /home/{{ ansible_user }}/k8s/
+      shell: kubectl apply -f /home/Cedrick/C270Project_Team4/Team4_k8s_App/
       become_user: "{{ ansible_user }}"
 
     - name: Restart Deployment to Pull Latest Image
