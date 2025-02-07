@@ -14,17 +14,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Run Deployment Script in VM
+      - name: install ssh key
         run: |
-          echo "🚀 Running deploy.sh in VM..."
-          sshpass -p "${{ secrets.VM_PASSWORD }}" ssh -o StrictHostKeyChecking=no cedrick@192.168.87.132 "bash /home/cedrick/C270ProjectTeam4/k8deployscript.sh"
-
-      - name: Debug SSH Connection
-        run: |
-          echo "🔍 Testing SSH Connection..."
-          sshpass -p "${{ secrets.VM_PASSWORD }}" ssh -o StrictHostKeyChecking=no cedrick@192.168.87.132 "
-            echo '✅ SSH Connected Successfully!';
-            hostname;
-            whoami;
-            ls -lah /home/cedrick/C270ProjectTeam4/;
-          "
+          install -m 600 -D /dev/null ~/.shh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.VM_HOST }} > ~/.ssh/known_hosts
+      - name: connect and run script
+        run: ssh ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }} && ./k8deployscript
+        
+   
