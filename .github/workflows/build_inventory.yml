@@ -45,9 +45,17 @@ jobs:
 
       - name: Setup SSH Key for Ansible
         run: |
+          echo "Creating SSH directory..."
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | sed 's/\\n/\n/g' > ~/.ssh/id_rsa
+          chmod 700 ~/.ssh
+          
+          echo "Decoding SSH private key..."
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | base64 --decode > ~/.ssh/id_rsa
+          
+          echo "Setting permissions..."
           chmod 600 ~/.ssh/id_rsa
+
+          echo "Adding SSH key to known hosts..."
           ssh-keyscan -H 192.168.87.132 >> ~/.ssh/known_hosts
         shell: bash
 
@@ -55,7 +63,7 @@ jobs:
         run: |
           echo "Checking SSH directory and key permissions:"
           ls -lah ~/.ssh
-          echo "Displaying SSH private key (masked):"
+          echo "Displaying first few lines of SSH key (masked):"
           head -n 5 ~/.ssh/id_rsa
         shell: bash
 
