@@ -49,10 +49,8 @@ jobs:
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
 
-          echo "Writing SSH private key..."
-          printf "%s" "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-
-          echo "Setting permissions..."
+          echo "Decoding and writing SSH private key..."
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
           echo "Adding SSH key to known hosts..."
@@ -61,13 +59,13 @@ jobs:
 
       - name: Debug SSH Key Permissions
         run: |
-          echo "Listing SSH directory contents:"
+          echo "Checking SSH directory..."
           ls -lah ~/.ssh
-          
-          echo "Checking file permissions:"
+
+          echo "Checking file permissions..."
           stat ~/.ssh/id_rsa
 
-          echo "Showing first few lines of SSH private key (masked):"
+          echo "Displaying first few lines of the SSH private key (masked)..."
           head -n 5 ~/.ssh/id_rsa | sed 's/./*/g/'
         shell: bash
 
