@@ -20,6 +20,6 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.VM_HOST }} > ~/.ssh/known_hosts
       - name: connect and run script
-        run: ssh ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }} && ./k8deployscript
+        run: ssh ${{ secrets.VM_USERNAME }}@${{ secrets.VM_HOST }} && echo "whoami" && ./k8deployscript
         
    
