@@ -16,16 +16,12 @@
       become: yes
       become_user: cedrick
       shell: |
-        if [ ! -f "/etc/kubernetes/admin.conf" ]; then
-          echo "Kubeconfig not found!"
-          exit 1
-        fi
-        export KUBECONFIG=/etc/kubernetes/admin.conf
+        export KUBECONFIG=$HOME/.kube/config
         kubectl apply -f /home/cedrick/C270Project_Team4/Team4_k8s_App/
-
+    
     - name: Restart Deployment to Pull Latest Image
       become: yes
       become_user: cedrick
       shell: |
-        export KUBECONFIG=/etc/kubernetes/admin.conf
-        kubectl get deployment inventory-manager-deployment && kubectl rollout restart deployment inventory-manager-deployment || echo "Deployment not found, skipping restart."
+        export KUBECONFIG=$HOME/.kube/config
+        kubectl rollout restart deployment inventory-manager-deployment
