@@ -5,7 +5,7 @@
   tasks:
     - name: Copy Kubernetes Deployment YAMLs to VM
       copy:
-        src: "../Team4_k8s_App/{{ item }}" 
+        src: "./Team4_k8s_App/{{ item }}"  # Ensure this is the correct relative path
         dest: "/home/cedrick/C270Project_Team4/Team4_k8s_App/"
       loop:
         - deployment.yaml
@@ -13,9 +13,13 @@
         - ingress.yaml
 
     - name: Apply Kubernetes Manifests
-      become: yes  # Ensures `kubectl` runs with sudo
+      become: yes
       become_user: cedrick
       shell: |
+        if [ ! -f "/etc/kubernetes/admin.conf" ]; then
+          echo "Kubeconfig not found!"
+          exit 1
+        fi
         export KUBECONFIG=/etc/kubernetes/admin.conf
         kubectl apply -f /home/cedrick/C270Project_Team4/Team4_k8s_App/
 
@@ -24,4 +28,4 @@
       become_user: cedrick
       shell: |
         export KUBECONFIG=/etc/kubernetes/admin.conf
-        kubectl rollout restart deployment inventory-manager-deployment
+        kubectl get deployment inventory-manager-deployment && kubectl rollout restart deployment inventory-manager-deployment || echo "Deployment not found, skipping restart."
