@@ -52,7 +52,7 @@ jobs:
           chmod 700 ~/.ssh
 
           echo "Writing SSH private key..."
-          echo "$SSH_KEY" | sed 's/\\n/\n/g' > ~/.ssh/id_rsa
+          echo -e "$SSH_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
           echo "Adding SSH key to known hosts..."
@@ -63,7 +63,7 @@ jobs:
         run: ls -lah ~/.ssh && cat ~/.ssh/id_rsa
 
       - name: Test SSH Connection
-        run: ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa cedrick@192.168.87.132 "echo SSH connection successful"
+        run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no cedrick@192.168.87.132 "echo SSH connection successful"
 
       - name: Debug Ansible Inventory
         run: cat ansible/inventory.ini
