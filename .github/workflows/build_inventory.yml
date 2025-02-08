@@ -1,4 +1,4 @@
-name: Build, Test, Dockerize, and Deploy to GitHub Pages
+name: Build, Test, Dockerize, and Push Docker Image
 
 on:
   push:
@@ -73,26 +73,3 @@ jobs:
             echo "The website is not running."
             exit 1
           fi
-
-  deploy-to-gh-pages:
-    runs-on: ubuntu-latest
-    needs: build-and-test  # Ensure this job runs after build-and-test
-
-    steps:
-      # 1. Checkout the repository
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-
-      # 2. Build Static Files (optional, if needed for static site generation)
-      - name: Build Static Files
-        run: |
-          # If you need to build frontend first (e.g., with npm or static site generator)
-          npm install
-          npm run build  # Adjust according to your build steps
-
-      # 3. Deploy to GitHub Pages
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./templates  # Make sure it points to the right directory with index.html
