@@ -1,36 +1,23 @@
-# - name: Simple Flask App Deployment on Localhost
-#   hosts: localhost
-#   become: yes  # Run as root
+- name: Deploy Inventory Manager to Kubernetes (Remote VM)
+  hosts: localhost
+  become: yes  # Ensure sudo access
 
-#   tasks:
-#     - name: Install Python & pip
-#       apt:
-#         name:
-#           - python3
-#           - python3-pip
-#         state: present
-#         update_cache: yes
+  tasks:
+    - name: Copy Kubernetes Deployment YAMLs to VM (local machine in this case)
+      copy:
+        src: "./Team4_k8s_App/{{ item }}"
+        dest: "/home/cedrick/C270Project_Team4/Team4_k8s_App/"
+      loop:
+        - deployment.yaml
+        - service.yaml
+        - ingress.yaml
 
-#     - name: Install Flask
-#       pip:
-#         name: flask
+    - name: Apply Kubernetes Manifests
+      shell: |
+        export KUBECONFIG=$HOME/.kube/config
+        kubectl apply -f /home/cedrick/C270Project_Team4/Team4_k8s_App/
 
-#     - name: Create project directory
-#       file:
-#         path: /opt/flask_app
-#         state: directory
-#         owner: "{{ ansible_user_id }}"
-#         group: "{{ ansible_user_id }}"
-#         mode: '0755'
-
-#     - name: Copy Flask app to localhost
-#       copy:
-#         src: ../inventory_manager.py
-#         dest: /opt/flask_app/inventory_manager.py
-#         mode: '0755'
-
-#     - name: Start Flask app in the background
-#       shell: nohup python3 /opt/flask_app/inventory_manager.py &  
-
-# # use the following command to run the playbook
-# # ansible-playbook -i "localhost," -c local ansible/deploy.yml
+    - name: Restart Deployment to Pull Latest Image
+      shell: |
+        export KUBECONFIG=$HOME/.kube/config
+        kubectl rollout restart deployment inventory-manager-deployment

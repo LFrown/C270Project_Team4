@@ -15,5 +15,6 @@ spec:
       containers:
         - name: inventory-manager
           image: lfrown/inventory-manager:latest
+          imagePullPolicy: Always  # Ensures new image is pulled
           ports:
             - containerPort: 5000
