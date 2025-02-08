@@ -43,27 +43,55 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install kubectl
+      - name: Setup SSH Key for Ansible
         run: |
-          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-          chmod +x kubectl
-          sudo mv kubectl /usr/local/bin/
+          echo "Creating SSH directory..."
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
 
-      - name: Setup Kubernetes Config for Minikube
-        run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
-          chmod 600 ~/.kube/config
+          echo "Writing SSH private key..."
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
 
-      - name: Start Minikube (if needed)
-        run: |
-          minikube start --driver=none  # Uncomment this line if you need to start minikube in the CI pipeline
-          
-      - name: Test Kubernetes Connection
-        run: kubectl get nodes
+          echo "Disabling strict host key checking..."
+          echo "Host 192.168.87.132" >> ~/.ssh/config
+          echo "    StrictHostKeyChecking no" >> ~/.ssh/config
 
-      - name: Apply Kubernetes Manifests
+          echo "Adding SSH key to known hosts..."
+          ssh-keyscan -H 192.168.87.132 >> ~/.ssh/known_hosts
+
+          echo "Verifying known hosts..."
+          cat ~/.ssh/known_hosts
+
+      - name: Start SSH Agent
         run: |
-          kubectl apply -f ansible/k8s/deployment.yaml
-          kubectl apply -f ansible/k8s/service.yaml
-          kubectl apply -f ansible/k8s/ingress.yaml
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/id_rsa
+
+      - name: Debug SSH Key Setup
+        run: |
+          echo "Checking ~/.ssh permissions..."
+          ls -lah ~/.ssh
+          echo "Checking ~/.ssh/id_rsa permissions..."
+          ls -lah ~/.ssh/id_rsa
+          echo "Checking SSH Key contents..."
+          cat ~/.ssh/id_rsa | head -n 10
+          echo "Checking known_hosts file..."
+          cat ~/.ssh/known_hosts
+
+      - name: Test SSH Connection
+        run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no cedrick@192.168.87.132 "echo SSH connection successful"
+
+      - name: Debug Ansible Inventory
+        run: cat ansible/inventory.ini
+
+      - name: Debug Ansible Inventory Parsing
+        run: ansible-inventory -i ansible/inventory.ini --list
+
+      - name: Deploy to Kubernetes via Ansible
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: ansible/deploy.yml
+          inventory: ansible/inventory.ini
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          options: "-vvv"
